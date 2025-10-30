@@ -1,31 +1,52 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard</h1>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <!-- Stat Card: Total Students -->
+<h1 class="text-3xl font-bold text-gray-800 mb-6">Dashboard - Resumen del Día</h1>
+
+<!-- Fila de Tarjetas de Estadísticas -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    
+    <!-- Tarjeta: Total de Estudiantes -->
     <div class="bg-white p-6 rounded-lg shadow-lg">
         <h2 class="text-xl font-semibold text-gray-700">Estudiantes Registrados</h2>
         <p class="text-4xl font-bold text-blue-600 mt-2">{{ student_count }}</p>
     </div>
 
-    <!-- Stat Card: Total Exits -->
+    <!-- Tarjeta: Total de Salidas Hoy -->
     <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h2 class="text-xl font-semibold text-gray-700">Salidas Registradas Hoy</h2>
-        <p class="text-4xl font-bold text-green-600 mt-2">{{ exit_count }}</p>
+        <h2 class="text-xl font-semibold text-gray-700">Total Salidas Hoy</h2>
+        <p class="text-4xl font-bold text-green-600 mt-2">{{ total_exits_today }}</p>
     </div>
 
-    <!-- Quick Actions Card -->
-    <div class="bg-white p-6 rounded-lg shadow-lg col-span-1 md:col-span-2 lg:col-span-1">
-        <h2 class="text-xl font-semibold text-gray-700 mb-4">Acciones Rápidas</h2>
-        <div class="flex flex-col space-y-3">
-            <a href="{{ url_for('routes.scan') }}" class="w-full text-center bg-blue-600 text-white font-bold py-3 px-4 rounded hover:bg-blue-700 transition duration-300">
-                Escanear Nueva Salida
-            </a>
-            <a href="{{ url_for('routes.list_exits') }}" class="w-full text-center bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded hover:bg-gray-300 transition duration-300">
-                Ver Historial de Salidas
-            </a>
-        </div>
+    <!-- Tarjetas Dinámicas por Puerta -->
+    {% for door_name, count in daily_stats.items() %}
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-xl font-semibold text-gray-700">Salidas por {{ door_name }}</h2>
+        <p class="text-4xl font-bold text-purple-600 mt-2">{{ count }}</p>
+    </div>
+    {% endfor %}
+
+    <!-- Mensaje si no hay salidas hoy -->
+    {% if not daily_stats %}
+    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-lg flex items-center justify-center">
+        <p class="text-lg text-gray-500">Aún no se han registrado salidas el día de hoy.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Fila de Acciones Rápidas -->
+<div class="mt-8 bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Acciones Rápidas</h2>
+    <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-3 sm:space-y-0">
+        <a href="{{ url_for('routes.scan') }}" class="flex-1 text-center bg-blue-600 text-white font-bold py-3 px-4 rounded hover:bg-blue-700 transition duration-300">
+            Escanear Nueva Salida
+        </a>
+        <a href="{{ url_for('routes.daily_report') }}" class="flex-1 text-center bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded hover:bg-gray-300 transition duration-300">
+            Ver Reporte Diario
+        </a>
+        <a href="{{ url_for('routes.list_exits') }}" class="flex-1 text-center bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded hover:bg-gray-300 transition duration-300">
+            Ver Historial Completo
+        </a>
     </div>
 </div>
 {% endblock %}

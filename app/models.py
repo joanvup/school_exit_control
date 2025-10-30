@@ -34,6 +34,7 @@ class Student(db.Model):
     name = db.Column(db.String(120), nullable=False)
     course = db.Column(db.String(80), nullable=True)
     authorized = db.Column(db.Boolean, default=False, nullable=False)
+    photo_filename = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     exits = db.relationship('Exit', backref='student', lazy=True, cascade="all, delete-orphan")

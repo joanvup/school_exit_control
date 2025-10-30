@@ -19,8 +19,19 @@
 
     <div id="qr-reader" class="w-full border-2 border-dashed border-gray-300 rounded-lg" style="width:100%"></div>
     
-    <div id="scan-result" class="mt-6 p-4 rounded-lg text-center hidden">
-        <h3 id="result-message" class="font-semibold"></h3>
+    <div id="scan-result" class="mt-6 p-4 rounded-lg text-center hidden flex flex-col items-center">
+    
+        <!-- Contenedor de la foto con placeholder e imagen real -->
+        <div id="student-photo-container" class="relative mb-4 h-32 w-32">
+            <!-- Placeholder (el círculo con texto) -->
+            <div id="photo-placeholder" class="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-full border-4 border-gray-300">
+                <span class="text-gray-500 text-sm text-center">Foto del<br>estudiante</span>
+            </div>
+            <!-- Imagen real del estudiante (inicialmente oculta) -->
+            <img id="student-photo" src="" alt="Foto del estudiante" class="h-full w-full object-cover rounded-full border-4 border-transparent hidden">
+        </div>
+
+        <h3 id="result-message" class="font-semibold text-lg"></h3>
         <p id="student-details" class="text-gray-600"></p>
     </div>
 

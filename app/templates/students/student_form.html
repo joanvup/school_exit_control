@@ -9,7 +9,7 @@
             Añadir Nuevo Estudiante
         {% endif %}
     </h2>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data"></form>
         {{ form.hidden_tag() }}
         <div class="mb-4">
             {{ form.id.label(class="block text-gray-700 text-sm font-bold mb-2") }}
@@ -31,6 +31,15 @@
                 {{ form.authorized(class="form-checkbox h-5 w-5 text-blue-600") }}
                 <span class="ml-2 text-gray-700">{{ form.authorized.label.text }}</span>
             </label>
+        </div>
+        <!-- AÑADIR CAMPO DE FOTO -->
+        <div class="mb-6">
+            {{ form.photo.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.photo(class="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer focus:outline-none") }}
+            {% if student and student.photo_filename %}
+                <p class="text-xs text-gray-500 mt-2">Foto actual:</p>
+                <img src="{{ url_for('routes.student_photo', filename=student.photo_filename) }}" alt="Foto de {{ student.name }}" class="mt-2 h-24 w-24 object-cover rounded-md">
+            {% endif %}
         </div>
         <div class="flex items-center justify-end">
             <a href="{{ url_for('routes.list_students') }}" class="text-gray-600 hover:text-gray-800 mr-4">Cancelar</a>

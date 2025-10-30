@@ -21,3 +21,5 @@ class Config:
     # --- Configuración de Uploads ---
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5 MB
     UPLOAD_EXTENSIONS = ['.xlsx', '.xls']
+    # Carpeta para guardar las fotos de los estudiantes
+    STUDENT_PHOTOS_FOLDER = 'student_photos'

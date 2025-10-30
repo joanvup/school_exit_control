@@ -11,10 +11,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Sonidos de feedback
     const audioSuccess = new Audio('/static/audio/success.mp3');
     const audioError = new Audio('/static/audio/error.mp3');
+    const studentPhoto = document.getElementById('student-photo');
+    const photoPlaceholder = document.getElementById('photo-placeholder');
 
     // Función para mostrar el resultado final en la UI
-    function showResult(success, message, details = '') {
+    function showResult(success, message, details = '', photoUrl = null) {
         resultContainer.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800');
+    
         
         if (success) {
             resultContainer.classList.add('bg-green-100', 'text-green-800');
@@ -26,10 +29,29 @@ document.addEventListener('DOMContentLoaded', function () {
         
         resultMessage.textContent = message;
         studentDetails.textContent = details;
-        
-        // Ocultar el mensaje después de 5 segundos
+        // --- LÓGICA DE FOTO MEJORADA Y COMPLETA ---
+        if (success && photoUrl) {
+            // Caso 1: Éxito y HAY foto
+            // Mostramos la imagen y ocultamos el placeholder
+            studentPhoto.src = photoUrl;
+            studentPhoto.classList.remove('hidden');
+            photoPlaceholder.classList.add('hidden');
+            // Cambiamos el color del borde de la imagen para que coincida con el fondo de éxito
+            studentPhoto.classList.remove('border-transparent', 'border-red-500');
+            studentPhoto.classList.add('border-green-500');
+
+        } else {
+            // Caso 2: Error o Éxito pero NO hay foto
+            // Ocultamos la imagen y mostramos el placeholder
+            studentPhoto.classList.add('hidden');
+            photoPlaceholder.classList.remove('hidden');
+        }
+
+        // Ocultar todo después de 5 segundos y resetear al estado inicial
         setTimeout(() => {
             resultContainer.classList.add('hidden');
+            studentPhoto.classList.add('hidden');
+            photoPlaceholder.classList.remove('hidden'); // Dejar el placeholder visible para el próximo escaneo
         }, 5000);
     }
 
@@ -74,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // El servidor respondió con éxito (código 200)
             if (data.success) {
                 const details = `Nombre: ${data.student.name} | Curso: ${data.student.course}`;
-                showResult(true, data.message, details);
+                showResult(true, data.message, details, data.student.photo_url);
             } else {
                 // Esto podría ocurrir si el servidor devuelve success: false con un código 200
                 showResult(false, data.message);

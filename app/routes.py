@@ -3,7 +3,7 @@ import pandas as pd
 import io
 import os 
 from flask import (
-    Blueprint, render_template, redirect, url_for, flash, request, jsonify, Response, current_app
+    Blueprint, render_template, redirect, url_for, flash, request, jsonify, Response, current_app, send_from_directory
 )
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
@@ -15,11 +15,14 @@ import base64
 import json
 from datetime import datetime, timedelta, date, time
 from .models import db, User, Student, Exit, Role, Setting # <--- Añadir Setting
-from sqlalchemy import true
+from sqlalchemy import func
 import pytz
 
 bp = Blueprint('routes', __name__)
-
+# --- Ruta para servir el Service Worker desde la raíz ---
+@bp.route('/sw.js')
+def service_worker():
+    return send_from_directory('static', 'sw.js')
 # --- Rutas de Autenticación ---
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -59,9 +62,48 @@ def register():
 @bp.route('/')
 @login_required
 def dashboard():
+    # --- Lógica de cálculo de estadísticas del día ---
+
+    # 1. Cargar la zona horaria local
+    try:
+        local_tz = pytz.timezone(current_app.config.get('LOCAL_TIMEZONE', 'UTC'))
+    except pytz.UnknownTimeZoneError:
+        local_tz = pytz.utc
+
+    # 2. Definir el rango del día actual en la zona horaria local y convertirlo a UTC
+    today_local = datetime.now(local_tz).date()
+    start_of_day_local = local_tz.localize(datetime.combine(today_local, time.min))
+    end_of_day_local = local_tz.localize(datetime.combine(today_local, time.max))
+    
+    start_of_day_utc = start_of_day_local.astimezone(pytz.utc)
+    end_of_day_utc = end_of_day_local.astimezone(pytz.utc)
+
+    # 3. Consultar las salidas del día y agrupar por puerta
+    # Usamos una consulta de SQLAlchemy para que la base de datos haga el trabajo pesado.
+    exits_by_door = db.session.query(
+        Door.name,
+        func.count(Exit.id)
+    ).join(Door, Exit.door_id == Door.id).filter(
+        Exit.timestamp >= start_of_day_utc,
+        Exit.timestamp <= end_of_day_utc
+    ).group_by(Door.name).all()
+
+    # Formatear los resultados en un diccionario más fácil de usar en la plantilla
+    # ej: {'Puerta A': 15, 'Puerta B': 10}
+    daily_stats = {door_name: count for door_name, count in exits_by_door}
+    
+    # Calcular el total de salidas del día
+    total_exits_today = sum(daily_stats.values())
+    
+    # 4. Obtener el total de estudiantes (como antes)
     student_count = Student.query.count()
-    exit_count = Exit.query.count()
-    return render_template('main/dashboard.html', student_count=student_count, exit_count=exit_count)
+
+    return render_template(
+        'main/dashboard.html',
+        student_count=student_count,
+        total_exits_today=total_exits_today,
+        daily_stats=daily_stats
+    )
 
 @bp.route('/scan')
 @login_required
@@ -128,11 +170,14 @@ def api_scan():
     )
     db.session.add(new_exit)
     db.session.commit()
+    photo_url = None
+    if student.photo_filename:
+        photo_url = url_for('routes.student_photo', filename=student.photo_filename, _external=True)
 
     return jsonify({
         'success': True,
         'message': f'Salida registrada para {student.name}.',
-        'student': {'name': student.name, 'course': student.course}
+        'student': {'name': student.name, 'course': student.course, 'photo_url': photo_url }
     })
 
 # --- CRUD de Estudiantes ---
@@ -154,6 +199,14 @@ def create_student():
             flash('Ya existe un estudiante con ese ID.', 'danger')
         else:
             student = Student(id=form.id.data, name=form.name.data, course=form.course.data, authorized=form.authorized.data)
+            # --- LÓGICA DE SUBIDA DE FOTO ---
+            if form.photo.data:
+                photo_file = form.photo.data
+                # Guardar el archivo como {student.id}.jpg
+                filename = f"{student.id}.jpg"
+                photo_path = os.path.join(current_app.root_path, current_app.config['STUDENT_PHOTOS_FOLDER'], filename)
+                photo_file.save(photo_path)
+                student.photo_filename = filename
             db.session.add(student)
             db.session.commit()
             flash('Estudiante creado exitosamente.', 'success')
@@ -170,6 +223,13 @@ def edit_student(id):
         student.name = form.name.data
         student.course = form.course.data
         student.authorized = form.authorized.data
+        # --- LÓGICA DE SUBIDA DE FOTO ---
+        if form.photo.data:
+            photo_file = form.photo.data
+            filename = f"{student.id}.jpg"
+            photo_path = os.path.join(current_app.root_path, current_app.config['STUDENT_PHOTOS_FOLDER'], filename)
+            photo_file.save(photo_path)
+            student.photo_filename = filename
         db.session.commit()
         flash('Estudiante actualizado exitosamente.', 'success')
         return redirect(url_for('routes.list_students'))
@@ -476,3 +536,9 @@ def daily_report():
                            exits=exits_for_date, 
                            selected_date=selected_date,
                            title="Reporte Diario de Salidas")
+
+# --- Ruta para servir las fotos de los estudiantes ---
+@bp.route('/student_photo/<filename>')
+def student_photo(filename):
+    directory = os.path.join(current_app.root_path, current_app.config['STUDENT_PHOTOS_FOLDER'])
+    return send_from_directory(directory, filename)

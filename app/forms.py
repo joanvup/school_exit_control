@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField
 from wtforms.validators import DataRequired, EqualTo, ValidationError, Length
 from .models import User
+from flask_wtf.file import FileField, FileAllowed
 
 class LoginForm(FlaskForm):
     username = StringField('Usuario', validators=[DataRequired(), Length(min=4, max=80)])
@@ -27,6 +28,9 @@ class StudentForm(FlaskForm):
     name = StringField('Nombre Completo', validators=[DataRequired()])
     course = StringField('Curso')
     authorized = BooleanField('Autorizado para Salida Peatonal')
+    photo = FileField('Foto del Estudiante (JPG)', validators=[
+        FileAllowed(['jpg', 'jpeg'], '¡Solo se permiten imágenes JPG!')
+    ])
     submit = SubmitField('Guardar')
 
 class ImportForm(FlaskForm):
