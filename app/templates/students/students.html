@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold">Gestión de Estudiantes</h1>
+    <div class="flex items-center space-x-2">
+        <a href="{{ url_for('routes.generate_qrs') }}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">Generar QRs</a>
+        <a href="{{ url_for('routes.import_students') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">Importar XLSX</a>
+        <a href="{{ url_for('routes.create_student') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir Estudiante</a>
+    </div>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-lg overflow-x-auto">
+    <table class="w-full whitespace-no-wrap">
+        <thead>
+            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                <th class="px-4 py-3">ID</th>
+                <th class="px-4 py-3">Nombre</th>
+                <th class="px-4 py-3">Curso</th>
+                <th class="px-4 py-3">Autorizado</th>
+                <th class="px-4 py-3">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y">
+            {% for student in students.items %}
+            <tr class="text-gray-700">
+                <td class="px-4 py-3 text-sm">{{ student.id }}</td>
+                <td class="px-4 py-3 font-semibold">{{ student.name }}</td>
+                <td class="px-4 py-3 text-sm">{{ student.course }}</td>
+                <td class="px-4 py-3 text-sm">
+                    {% if student.authorized %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full">Sí</span>
+                    {% else %}
+                        <span class="px-2 py-1 font-semibold leading-tight text-red-700 bg-red-100 rounded-full">No</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center space-x-4 text-sm">
+                        <a href="{{ url_for('routes.edit_student', id=student.id) }}" class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg hover:text-purple-800 focus:outline-none focus:shadow-outline-gray" aria-label="Edit">
+                            Editar
+                        </a>
+                        <form action="{{ url_for('routes.delete_student', id=student.id) }}" method="post" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este estudiante?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg hover:text-red-800 focus:outline-none focus:shadow-outline-gray" aria-label="Delete">
+                                Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="px-4 py-3 text-center text-gray-500">No hay estudiantes registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Paginación (igual que en exits.html) -->
+{% if students.pages > 1 %}
+<div class="flex justify-center mt-6">
+    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <a href="{{ url_for('routes.list_students', page=students.prev_num) if students.has_prev else '#' }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {{ 'disabled:opacity-50 cursor-not-allowed' if not students.has_prev }}">Anterior</a>
+        {% for page_num in students.iter_pages() %}
+            <a href="{{ url_for('routes.list_students', page=page_num) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium {{ 'bg-blue-100 text-blue-600' if page_num == students.page else 'text-gray-700 hover:bg-gray-50' }}">{{ page_num }}</a>
+        {% endfor %}
+        <a href="{{ url_for('routes.list_students', page=students.next_num) if students.has_next else '#' }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {{ 'disabled:opacity-50 cursor-not-allowed' if not students.has_next }}">Siguiente</a>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,13 @@
+# requirements.txt
+Flask>=2.2.0
+Flask-SQLAlchemy>=3.0.0
+Flask-Migrate>=4.0.0
+Flask-Login>=0.6.0
+Flask-WTF>=1.1.0
+Werkzeug>=2.2.0
+pandas>=1.5.0
+openpyxl>=3.0.0
+python-dotenv>=0.21.0
+gunicorn # Para despliegue
+qrcode[pil]>=7.3
+pytz>=2022.6

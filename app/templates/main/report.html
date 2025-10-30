@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Reporte Diario de Salidas</h1>
+
+<!-- Formulario de Selección de Fecha y Exportación -->
+<div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="flex flex-col md:flex-row md:items-end md:space-x-4">
+            <div class="flex-grow">
+                {{ form.report_date.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+                {{ form.report_date(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500") }}
+            </div>
+            <div class="mt-4 md:mt-0 flex space-x-2">
+                {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer") }}
+                <button type="submit" name="export" value="true" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded cursor-pointer">
+                    Exportar a Excel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Resumen y Tabla de Resultados -->
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-semibold mb-4">
+        Resultados para: <span class="text-blue-700">{{ selected_date.strftime('%d de %B de %Y') }}</span>
+    </h2>
+    <p class="mb-4 text-gray-700">
+        Total de salidas registradas en esta fecha: <strong class="text-xl">{{ exits|length }}</strong>
+    </p>
+
+    <div class="overflow-x-auto">
+        <table class="w-full whitespace-no-wrap">
+            <thead>
+                <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                    <th class="px-4 py-3">Hora</th>
+                    <th class="px-4 py-3">Nombre Estudiante</th>
+                    <th class="px-4 py-3">Curso</th>
+                    <th class="px-4 py-3">Puerta</th>
+                    <th class="px-4 py-3">Operador</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y">
+                {% for exit in exits %}
+                <tr class="text-gray-700">
+                    <td class="px-4 py-3 text-sm">{{ (exit.timestamp | localtime).strftime('%H:%M:%S') }}</td>
+                    <td class="px-4 py-3 font-semibold">{{ exit.student_name }}</td>
+                    <td class="px-4 py-3 text-sm">{{ exit.course }}</td>
+                    <td class="px-4 py-3 text-sm">{{ exit.door.name }}</td>
+                    <td class="px-4 py-3 text-sm">{{ exit.operator.username }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-4 py-3 text-center text-gray-500">No hay salidas registradas para esta fecha.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold">Historial de Salidas</h1>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-lg overflow-x-auto">
+    <table class="w-full whitespace-no-wrap">
+        <thead>
+            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                <th class="px-4 py-3">Fecha y Hora</th>
+                <th class="px-4 py-3">ID Estudiante</th>
+                <th class="px-4 py-3">Nombre Estudiante</th>
+                <th class="px-4 py-3">Curso</th>
+                <th class="px-4 py-3">Puerta</th>
+                <th class="px-4 py-3">Operador</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y">
+            {% for exit in exits.items %}
+            <tr class="text-gray-700">
+                <td class="px-4 py-3 text-sm">{{ (exit.timestamp | localtime).strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td class="px-4 py-3 text-sm">{{ exit.student_id }}</td>
+                <td class="px-4 py-3 font-semibold">{{ exit.student_name }}</td>
+                <td class="px-4 py-3 text-sm">{{ exit.course }}</td>
+                <td class="px-4 py-3 text-sm">{{ exit.door.name }}</td> 
+                <td class="px-4 py-3 text-sm">{{ exit.operator.username }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="px-4 py-3 text-center text-gray-500">No hay salidas registradas.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Paginación -->
+{% if exits.pages > 1 %}
+<div class="flex justify-center mt-6">
+    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+        <a href="{{ url_for('routes.list_exits', page=exits.prev_num) if exits.has_prev else '#' }}"
+           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {{ 'disabled:opacity-50 cursor-not-allowed' if not exits.has_prev }}">
+            Anterior
+        </a>
+        {% for page_num in exits.iter_pages() %}
+            {% if page_num %}
+                <a href="{{ url_for('routes.list_exits', page=page_num) }}"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium {{ 'bg-blue-100 text-blue-600' if page_num == exits.page else 'text-gray-700 hover:bg-gray-50' }}">
+                    {{ page_num }}
+                </a>
+            {% else %}
+                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
+            {% endif %}
+        {% endfor %}
+        <a href="{{ url_for('routes.list_exits', page=exits.next_num) if exits.has_next else '#' }}"
+           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {{ 'disabled:opacity-50 cursor-not-allowed' if not exits.has_next }}">
+            Siguiente
+        </a>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h1 class="text-2xl font-bold mb-6">Configuración de la Aplicación</h1>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-6">
+            {{ form.exit_cooldown_minutes.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.exit_cooldown_minutes(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500") }}
+            <p class="text-gray-600 text-xs italic mt-2">{{ form.exit_cooldown_minutes.description }}</p>
+            {% for error in form.exit_cooldown_minutes.errors %}
+                <span class="text-red-500 text-xs">{{ error }}</span>
+            {% endfor %}
+        </div>
+        
+        <div class="flex items-center justify-end">
+            {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

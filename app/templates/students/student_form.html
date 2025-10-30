@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-center">
+        {% if student %}
+            Editar Estudiante
+        {% else %}
+            Añadir Nuevo Estudiante
+        {% endif %}
+    </h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-4">
+            {{ form.id.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.id(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500", readonly=student) }}
+            {% if student %}
+                <p class="text-xs text-gray-500 mt-1">El ID no se puede modificar.</p>
+            {% endif %}
+        </div>
+        <div class="mb-4">
+            {{ form.name.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.name(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500") }}
+        </div>
+        <div class="mb-4">
+            {{ form.course.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.course(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500") }}
+        </div>
+        <div class="mb-6">
+            <label class="flex items-center">
+                {{ form.authorized(class="form-checkbox h-5 w-5 text-blue-600") }}
+                <span class="ml-2 text-gray-700">{{ form.authorized.label.text }}</span>
+            </label>
+        </div>
+        <div class="flex items-center justify-end">
+            <a href="{{ url_for('routes.list_students') }}" class="text-gray-600 hover:text-gray-800 mr-4">Cancelar</a>
+            {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-pointer") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold">Gestión de Usuarios</h1>
+    <a href="{{ url_for('routes.register') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir Usuario</a>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-lg overflow-x-auto">
+    <table class="w-full whitespace-no-wrap">
+        <thead>
+            <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                <th class="px-4 py-3">ID</th>
+                <th class="px-4 py-3">Username</th>
+                <th class="px-4 py-3">Rol</th>
+                <th class="px-4 py-3">Fecha de Creación</th>
+                <th class="px-4 py-3">Acciones</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y">
+            {% for user in users %}
+            <tr class="text-gray-700">
+                <td class="px-4 py-3 text-sm">{{ user.id }}</td>
+                <td class="px-4 py-3 font-semibold">{{ user.username }}</td>
+                <td class="px-4 py-3 text-sm">
+                    <span class="px-2 py-1 font-semibold leading-tight rounded-full 
+                        {% if user.role.value == 'admin' %} text-purple-700 bg-purple-100 {% else %} text-gray-700 bg-gray-100 {% endif %}">
+                        {{ user.role.value|capitalize }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-sm">{{ (user.created_at | localtime).strftime('%Y-%m-%d') }}</td>
+                <td class="px-4 py-3">
+                    <div class="flex items-center space-x-4 text-sm">
+                        {% if user.id != current_user.id %}
+                        <form action="{{ url_for('routes.delete_user', id=user.id) }}" method="post" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este usuario?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-red-600 rounded-lg hover:text-red-800 focus:outline-none" aria-label="Delete">
+                                Eliminar
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-xs text-gray-400">(Usuario actual)</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

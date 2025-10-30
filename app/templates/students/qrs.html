@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* ... (estilos de qr-grid, print-button y @media print se mantienen igual que en la Opción 1) ... */
+    
+    .qr-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+    
+    .qr-sticker {
+        width: 3cm;
+        height: 3cm;
+        padding: 1.5mm; /* Un poco de padding para los bordes */
+        border: 1px dashed #ccc;
+        position: relative; /* CAMBIO: Necesario para el posicionamiento absoluto del hijo */
+        box-sizing: border-box;
+    }
+    .qr-sticker img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .qr-sticker p {
+        /* CAMBIO: Posicionamiento absoluto */
+        position: absolute;
+        bottom: 0;
+        right: 1mm;
+        font-size: 5pt; /* Texto muy pequeño */
+        color: black;
+        background-color: rgba(255, 255, 255, 0.7); /* Fondo semitransparente para legibilidad */
+        padding: 0 1mm;
+        margin: 0;
+        line-height: 1;
+    }
+
+    @media print {
+        nav, .print-hide { display: none !important; }
+        body { margin: 0; padding: 0; }
+        .qr-grid { gap: 0; margin: 0.5cm; }
+        .qr-sticker { border: 1px dashed #999; break-inside: avoid; }
+    }
+</style>
+
+<div class="print-hide flex justify-between items-center mb-6">
+    <!-- ... (Contenido del div print-hide se mantiene igual) ... -->
+    <h1 class="text-3xl font-bold">Códigos QR para Impresión</h1>
+    <!-- ... -->
+</div>
+
+
+<div class="bg-white p-6 rounded-lg shadow-lg">
+    <div class="qr-grid">
+        {% for student in students_with_qrs %}
+        <div class="qr-sticker">
+            <img src="data:image/png;base64,{{ student.qr_code }}" alt="QR para estudiante {{ student.id }}">
+            <p>ID: {{ student.id }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

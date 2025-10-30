@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold mb-6 text-center">{{ title }}</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-4">
+            {{ form.name.label(class="block text-gray-700 text-sm font-bold mb-2") }}
+            {{ form.name(class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700") }}
+        </div>
+        <div class="mb-6">
+            <label class="flex items-center">
+                {{ form.is_active(class="form-checkbox h-5 w-5 text-blue-600") }}
+                <span class="ml-2 text-gray-700">{{ form.is_active.label.text }}</span>
+            </label>
+        </div>
+        <div class="flex items-center justify-end">
+            <a href="{{ url_for('routes.list_doors') }}" class="text-gray-600 mr-4">Cancelar</a>
+            {{ form.submit(class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

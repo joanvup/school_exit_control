@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6 text-center">Escanear Código QR</h1>
+    
+    <div class="mb-4">
+        <label for="door-select" class="block text-sm font-medium text-gray-700">Seleccionar Puerta de Salida:</label>
+        <select id="door-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 rounded-md">
+            {% if doors %}
+                {% for door in doors %}
+                <option value="{{ door.id }}">{{ door.name }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="" disabled>No hay puertas activas</option>
+            {% endif %}
+        </select>
+    </div>
+
+    <div id="qr-reader" class="w-full border-2 border-dashed border-gray-300 rounded-lg" style="width:100%"></div>
+    
+    <div id="scan-result" class="mt-6 p-4 rounded-lg text-center hidden">
+        <h3 id="result-message" class="font-semibold"></h3>
+        <p id="student-details" class="text-gray-600"></p>
+    </div>
+
+    <div class="mt-4 text-center">
+        <p class="text-sm text-gray-500">Apunte la cámara del dispositivo al código QR del estudiante.</p>
+        <div id="camera-select-container" class="mt-2 hidden">
+            <label for="camera-select" class="text-sm">Cambiar cámara:</label>
+            <select id="camera-select" class="text-sm rounded"></select>
+        </div>
+    </div>
+</div>
+
+<!-- CSRF Token para JS -->
+<input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
+
+<!-- Librería de escaner QR -->
+<script src="https://unpkg.com/html5-qrcode/html5-qrcode.min.js"></script>
+<!-- Lógica del escaner -->
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+{% endblock %}
