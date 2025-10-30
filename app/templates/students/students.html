@@ -5,7 +5,7 @@
     <h1 class="text-3xl font-bold">Gestión de Estudiantes</h1>
     <div class="flex items-center space-x-2">
         <a href="{{ url_for('routes.generate_qrs') }}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">Generar QRs</a>
-        <a href="{{ url_for('routes.import_students') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">Importar XLSX</a>
+        <a href="{{ url_for('routes.import_students') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Importar XLSX</a>
         <a href="{{ url_for('routes.create_student') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir Estudiante</a>
     </div>
 </div>
@@ -14,6 +14,8 @@
     <table class="w-full whitespace-no-wrap">
         <thead>
             <tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-gray-50">
+                <!-- 1. AÑADIR NUEVA COLUMNA PARA LA FOTO -->
+                <th class="px-4 py-3">Foto</th>
                 <th class="px-4 py-3">ID</th>
                 <th class="px-4 py-3">Nombre</th>
                 <th class="px-4 py-3">Curso</th>
@@ -24,6 +26,30 @@
         <tbody class="bg-white divide-y">
             {% for student in students.items %}
             <tr class="text-gray-700">
+                
+                <!-- 2. AÑADIR CELDA PARA LA FOTO -->
+                <td class="px-4 py-3">
+                    <div class="flex items-center text-sm">
+                        <!-- Contenedor de la imagen -->
+                        <div class="relative w-10 h-10 mr-3 rounded-full">
+                            {% if student.photo_filename %}
+                                <!-- Si el estudiante TIENE foto -->
+                                <img class="object-cover w-full h-full rounded-full" 
+                                     src="{{ url_for('routes.student_photo', filename=student.photo_filename) }}" 
+                                     alt="Foto de {{ student.name }}" 
+                                     loading="lazy" />
+                            {% else %}
+                                <!-- Si el estudiante NO tiene foto (placeholder) -->
+                                <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+
                 <td class="px-4 py-3 text-sm">{{ student.id }}</td>
                 <td class="px-4 py-3 font-semibold">{{ student.name }}</td>
                 <td class="px-4 py-3 text-sm">{{ student.course }}</td>
@@ -50,23 +76,42 @@
             </tr>
             {% else %}
             <tr>
-                <td colspan="5" class="px-4 py-3 text-center text-gray-500">No hay estudiantes registrados.</td>
+                <!-- Ajustar el colspan para la nueva columna -->
+                <td colspan="6" class="px-4 py-3 text-center text-gray-500">No hay estudiantes registrados.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-<!-- Paginación (igual que en exits.html) -->
+<!-- ... (toda la tabla que acabamos de modificar) ... -->
+</div>
+
+<!-- PAGINACIÓN - Añadir este bloque de vuelta -->
 {% if students.pages > 1 %}
 <div class="flex justify-center mt-6">
     <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-        <a href="{{ url_for('routes.list_students', page=students.prev_num) if students.has_prev else '#' }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {{ 'disabled:opacity-50 cursor-not-allowed' if not students.has_prev }}">Anterior</a>
-        {% for page_num in students.iter_pages() %}
-            <a href="{{ url_for('routes.list_students', page=page_num) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium {{ 'bg-blue-100 text-blue-600' if page_num == students.page else 'text-gray-700 hover:bg-gray-50' }}">{{ page_num }}</a>
+        <a href="{{ url_for('routes.list_students', page=students.prev_num) if students.has_prev else '#' }}" 
+           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {% if not students.has_prev %}opacity-50 cursor-not-allowed{% endif %}">
+            Anterior
+        </a>
+        {% for page_num in students.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if page_num %}
+                <a href="{{ url_for('routes.list_students', page=page_num) }}"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium {{ 'z-10 bg-blue-50 border-blue-500 text-blue-600' if page_num == students.page else 'text-gray-700 hover:bg-gray-50' }}">
+                    {{ page_num }}
+                </a>
+            {% else %}
+                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
+            {% endif %}
         {% endfor %}
-        <a href="{{ url_for('routes.list_students', page=students.next_num) if students.has_next else '#' }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {{ 'disabled:opacity-50 cursor-not-allowed' if not students.has_next }}">Siguiente</a>
+        <a href="{{ url_for('routes.list_students', page=students.next_num) if students.has_next else '#' }}"
+           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 {% if not students.has_next %}opacity-50 cursor-not-allowed{% endif %}">
+            Siguiente
+        </a>
     </nav>
 </div>
 {% endif %}
+<!-- Fin del bloque de paginación -->
+
 {% endblock %}
