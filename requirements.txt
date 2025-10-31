@@ -11,3 +11,5 @@ python-dotenv>=0.21.0
 gunicorn # Para despliegue
 qrcode[pil]>=7.3
 pytz>=2022.6
+mysql==0.0.3
+PyMySQL==1.1.2
