@@ -8,7 +8,7 @@ from flask import (
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from .models import db, User, Student, Exit, Role, Door
-from .forms import LoginForm, RegistrationForm, StudentForm, ImportForm, SettingsForm, DoorForm, ReportForm
+from .forms import LoginForm, RegistrationForm, StudentForm, ImportForm, SettingsForm, DoorForm, ReportForm, ChangePasswordForm
 from .decorators import admin_required
 import qrcode
 import base64
@@ -351,6 +351,25 @@ def delete_user(id):
     db.session.commit()
     flash('Usuario eliminado.', 'success')
     return redirect(url_for('routes.list_users'))
+
+@bp.route('/users/<int:id>/change-password', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def change_user_password(id):
+    user = User.query.get_or_404(id)
+    # Un admin no puede cambiar la contraseña de otro admin
+    if user.role == Role.ADMIN and current_user.id != user.id:
+        flash('No puedes cambiar la contraseña de otro administrador.', 'danger')
+        return redirect(url_for('routes.list_users'))
+
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        user.set_password(form.password.data)
+        db.session.commit()
+        flash(f'La contraseña para el usuario {user.username} ha sido actualizada.', 'success')
+        return redirect(url_for('routes.list_users'))
+    
+    return render_template('users/change_password.html', title="Cambiar Contraseña", form=form, user=user)
 
 # --- Manejadores de Errores ---
 @bp.app_errorhandler(404)

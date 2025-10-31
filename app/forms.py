@@ -1,7 +1,7 @@
 # app/forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField
-from wtforms.validators import DataRequired, EqualTo, ValidationError, Length
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, FileField, DateField, SubmitField, IntegerField
+from wtforms.validators import DataRequired, EqualTo, ValidationError, Length, NumberRange
 from .models import User
 from flask_wtf.file import FileField, FileAllowed
 
@@ -38,9 +38,6 @@ class ImportForm(FlaskForm):
     submit = SubmitField('Importar')
 
 
-from wtforms import IntegerField
-from wtforms.validators import NumberRange
-
 class SettingsForm(FlaskForm):
     exit_cooldown_minutes = IntegerField(
         'Intervalo de Salida (minutos)',
@@ -56,8 +53,12 @@ class DoorForm(FlaskForm):
     submit = SubmitField('Guardar')
 
 
-from wtforms import DateField, SubmitField
-
 class ReportForm(FlaskForm):
     report_date = DateField('Seleccionar Fecha', format='%Y-%m-%d', validators=[DataRequired()])
     submit = SubmitField('Generar Reporte')
+
+class ChangePasswordForm(FlaskForm):
+    password = PasswordField('Nueva Contraseña', validators=[DataRequired(), Length(min=6)])
+    password2 = PasswordField(
+        'Repetir Nueva Contraseña', validators=[DataRequired(), EqualTo('password', message='Las contraseñas deben coincidir.')])
+    submit = SubmitField('Cambiar Contraseña')

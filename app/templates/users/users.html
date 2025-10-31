@@ -31,6 +31,7 @@
                 <td class="px-4 py-3 text-sm">{{ (user.created_at | localtime).strftime('%Y-%m-%d') }}</td>
                 <td class="px-4 py-3">
                     <div class="flex items-center space-x-4 text-sm">
+                        <a href="{{ url_for('routes.change_user_password', id=user.id) }}" class="text-blue-600 hover:text-blue-800">Cambiar Contraseña</a>
                         {% if user.id != current_user.id %}
                         <form action="{{ url_for('routes.delete_user', id=user.id) }}" method="post" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este usuario?');">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
