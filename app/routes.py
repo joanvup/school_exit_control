@@ -3,7 +3,7 @@ import pandas as pd
 import io
 import os 
 from flask import (
-    Blueprint, render_template, redirect, url_for, flash, request, jsonify, Response, current_app, send_from_directory
+    Blueprint, render_template, redirect, url_for, flash, request, jsonify, Response, current_app, send_from_directory, send_file
 )
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
@@ -17,6 +17,9 @@ from datetime import datetime, timedelta, date, time
 from .models import db, User, Student, Exit, Role, Setting # <--- Añadir Setting
 from sqlalchemy import func
 import pytz
+from qrcode.constants import ERROR_CORRECT_L
+import zipfile
+import tempfile
 
 bp = Blueprint('routes', __name__)
 # --- Ruta para servir el Service Worker desde la raíz ---
@@ -320,6 +323,66 @@ def download_template():
     return Response(output, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition": "attachment;filename=plantilla_estudiantes.xlsx"})
 
+# app/routes.py
+# ...
+
+@bp.route('/students/qrs/download')
+@login_required
+@admin_required
+def download_qr_codes_zip():
+    """
+    Genera un archivo PNG para cada estudiante y los comprime en un ZIP para su descarga.
+    """
+    students = Student.query.order_by(Student.id).all()
+    if not students:
+        flash('No hay estudiantes registrados para generar códigos QR.', 'warning')
+        return redirect(url_for('routes.list_students'))
+
+    # Usar un directorio temporal para almacenar los archivos PNG y el ZIP
+    with tempfile.TemporaryDirectory() as tmpdir:
+        qr_files_path = os.path.join(tmpdir, 'qr_codes')
+        os.makedirs(qr_files_path)
+        
+        zip_filename = f"qr_codes_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}.zip"
+        zip_path = os.path.join(tmpdir, zip_filename)
+
+        # --- Generación de los códigos QR ---
+        for student in students:
+            qr_payload = json.dumps({"id": student.id})
+            
+            # Configuración del QR para alta calidad y márgenes estrechos
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=ERROR_CORRECT_L,
+                box_size=50,  # Aumentamos el tamaño de la caja para mayor resolución
+                border=1,     # Borde mínimo (estrecho)
+            )
+            qr.add_data(qr_payload)
+            qr.make(fit=True)
+
+            # Crear la imagen. El tamaño final será box_size * número de módulos.
+            # Para un QR simple, son 21 módulos. 50 * 21 = 1050px, que es alta resolución.
+            img = qr.make_image(fill_color="black", back_color="white")
+
+            # Guardar el archivo PNG
+            filename = f"{student.id}.png"
+            file_path = os.path.join(qr_files_path, filename)
+            img.save(file_path)
+
+        # --- Creación del archivo ZIP ---
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for root, dirs, files in os.walk(qr_files_path):
+                for file in files:
+                    # Añadir cada archivo PNG al ZIP
+                    zipf.write(os.path.join(root, file), arcname=file)
+
+        # Enviar el archivo ZIP para su descarga
+        return send_file(
+            zip_path,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_filename
+        )
 
 # --- CRUD de Usuarios (Solo Admin) ---
 @bp.route('/users')

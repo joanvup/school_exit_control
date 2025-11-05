@@ -4,6 +4,10 @@
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Gestión de Estudiantes</h1>
     <div class="flex items-center space-x-2">
+        <!-- BOTÓN NUEVO -->
+        <a href="{{ url_for('routes.download_qr_codes_zip') }}" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded">
+            Descargar ZIP de QRs
+        </a>
         <a href="{{ url_for('routes.generate_qrs') }}" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">Generar QRs</a>
         <a href="{{ url_for('routes.import_students') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Importar XLSX</a>
         <a href="{{ url_for('routes.create_student') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir Estudiante</a>
